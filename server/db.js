@@ -1,5 +1,17 @@
 import Database from 'better-sqlite3';
-const db = new Database(process.env.DB_PATH || 'cefr.db');
+import fs from 'fs';
+import path from 'path';
+
+// Render'da /data/cefr.db yoki oddiy muhitda cefr.db ishlatish uchun
+const dbPath = process.env.DB_PATH || 'cefr.db';
+const dir = path.dirname(dbPath);
+
+// Agar papka mavjud bo'lmasa, uni avtomatik yaratamiz (Render Persistent Disk uchun)
+if (dir && dir !== '.' && !fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+}
+
+const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
@@ -14,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tests (
   type TEXT CHECK(type IN ('reading','listening')),
   duration INTEGER DEFAULT 60, difficulty TEXT DEFAULT 'medium', description TEXT,
   status TEXT DEFAULT 'draft', created_at TEXT DEFAULT CURRENT_TIMESTAMP);
--- Part: reading 1-5, listening 1-6. content = JSON (matiin, sarlavhalar, e'lonlar, variantlar bankasi)
+-- Part: reading 1-5, listening 1-6. content = JSON (matn, sarlavhalar, e'lonlar, variantlar bankasi)
 CREATE TABLE IF NOT EXISTS parts (
   id INTEGER PRIMARY KEY, test_id INTEGER REFERENCES tests(id) ON DELETE CASCADE,
   part_no INTEGER, kind TEXT, instructions TEXT,
@@ -35,7 +47,7 @@ const addCol = (t, c, def) => { if (!db.prepare(`PRAGMA table_info(${t})`).all()
 addCol('users', 'first_name', 'TEXT'); addCol('users', 'last_name', 'TEXT');
 addCol('attempts', 'session_id', 'TEXT');
 addCol('attempts', 'part_filter', 'TEXT');       // faqat bitta Part topshirilgan bo'lsa (masalan '3')
-addCol('tests', 'source', 'TEXT');             // data/ papkadagi manzil (fayldan olingan testlar)
+addCol('tests', 'source', 'TEXT');               // data/ papkadagi manzil (fayldan olingan testlar)
 addCol('tests', 'mock_group', 'TEXT');         // full mock nomi (Reading + Listening juftligi)
 addCol('tests', 'auto_draft', 'INTEGER DEFAULT 0');
 addCol('tests', 'src_hash', 'TEXT');
