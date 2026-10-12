@@ -1,0 +1,10 @@
+{
+  "name": "cefr-exam",
+  "private": true,
+  "scripts": {
+    "install:all": "npm i && npm i --prefix server && npm i --prefix client",
+    "dev": "concurrently -n api,web \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": { "concurrently": "^9.0.0" }
+}

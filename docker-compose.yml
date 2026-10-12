@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports: ["5000:5000"]
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-change-me-please}
+    volumes:
+      - db:/data
+      - uploads:/app/server/uploads
+      - ./data:/app/data
+    restart: unless-stopped
+volumes:
+  db:
+  uploads:
